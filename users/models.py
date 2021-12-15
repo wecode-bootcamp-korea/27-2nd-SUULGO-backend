@@ -23,64 +23,71 @@ class Meeting(TimeStampModel):
     class Meta: 
         db_table = 'meetings'
 
-class UserDrinkingMethod(models.Model): 
+class SurveyDrinkingMethod(models.Model): 
     drinking_method = models.ForeignKey('DrinkingMethod', on_delete=models.CASCADE)
-    user            = models.ForeignKey('User', on_delete=models.CASCADE)
+    survey          = models.ForeignKey('Survey', on_delete=models.CASCADE)
 
     class Meta: 
-        db_table = 'user_drinking_methods'
+        db_table = 'survey_drinking_methods'
 
 class DrinkingMethod(models.Model): 
-    name  = models.CharField(max_length=10)
-    users = models.ManyToManyField('User', through=UserDrinkingMethod)
+    name    = models.CharField(max_length=10)
+    surveys = models.ManyToManyField('Survey', through=SurveyDrinkingMethod)
 
     class Meta: 
         db_table = 'drinking_methods'
 
-class UserFlavor(models.Model):
+class SurveyFlavor(models.Model):
     flavor = models.ForeignKey('Flavor', on_delete=models.CASCADE)
-    user   = models.ForeignKey('User', on_delete=models.CASCADE)
+    survey = models.ForeignKey('Survey', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'user_flavors'
+        db_table = 'survey_flavors'
 
 class Flavor(models .Model):
-    name  = models.CharField(max_length=10)
-    users = models.ManyToManyField('User', through=UserFlavor)
+    name    = models.CharField(max_length=10)
+    surveys = models.ManyToManyField('Survey', through=SurveyFlavor)
 
     class Meta:
         db_table = 'flavors'
 
-class UserAlcoholCategory(models.Model):
+class SurveyAlcoholCategory(models.Model):
     alcohol_category = models.ForeignKey('AlcoholCategory', on_delete=models.CASCADE)
-    user             = models.ForeignKey('User', on_delete=models.CASCADE)
+    survey           = models.ForeignKey('Survey', on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'user_alcohol_categories'
+        db_table = 'survey_alcohol_categories'
 
 class AlcoholCategory(models.Model):
-    name  = models.CharField(max_length=10)
-    users = models.ManyToManyField('User', through=UserAlcoholCategory)
+    name    = models.CharField(max_length=10)
+    surveys = models.ManyToManyField('Survey', through=SurveyAlcoholCategory)
 
     class Meta:
         db_table = 'alcohol_categories'
 
+class Survey(TimeStampModel):
+    gender         = models.ForeignKey('Gender', on_delete=models.CASCADE)
+    mbti           = models.ForeignKey('Mbti', on_delete=models.CASCADE)
+    class_number   = models.PositiveSmallIntegerField()
+    stack          = models.IntegerField()
+    alcohol_limit  = models.IntegerField()
+    alcohol_level  = models.CharField(max_length=100)
+    comment        = models.CharField(max_length=500)
+    favorite_place = models.CharField(max_length=200)
+    favorite_food  = models.CharField(max_length=200)
+    hobby          = models.CharField(max_length=200)
+    deleted_at     = models.DateTimeField(null=True)
+    user           = models.ForeignKey('User', on_delete=models.CASCADE)      
+
+    class Meta:
+        db_table = 'surveys'
+
 class User(TimeStampModel):
-    name              = models.CharField(max_length=20)
+    kakao_id          = models.CharField(max_length=100)
+    name              = models.CharField(max_length=50)
     profile_image_url = models.URLField(max_length=500)
-    gender            = models.ForeignKey('Gender', on_delete=models.CASCADE)
-    mbti              = models.ForeignKey('Mbti', on_delete=models.CASCADE)
-    stack             = models.IntegerField()
-    alcohol_limit     = models.IntegerField()
-    alcohol_level     = models.IntegerField()
-    comment           = models.CharField(max_length=500)
-    favorite_place    = models.CharField(max_length=200)
-    favorite_food     = models.CharField(max_length=200)
-    hobby             = models.CharField(max_length=200)
-    email             = models.CharField(max_length=200)
-    kakao_login       = models.CharField(max_length=100)
+    email             = models.CharField(max_length=200, null=True)
     deleted_at        = models.DateTimeField(null=True)
-    class_number      = models.PositiveSmallIntegerField()
 
     class Meta:
         db_table = 'users'
