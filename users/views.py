@@ -1,4 +1,4 @@
-import jwt, requests
+import json, requests, jwt
 
 from django.views           import View
 from django.http            import JsonResponse
@@ -6,8 +6,9 @@ from django.core.exceptions import ValidationError
 from enum                   import Enum
 
 from users.models           import *
-from suulgo.settings        import SECRET_KEY, ALGORITHM
+from datetime               import datetime
 from core.utils             import authorization
+from suulgo.settings        import SECRET_KEY, ALGORITHM
 
 class ProfileView(View):
     @authorization
@@ -161,3 +162,30 @@ class UserListView(View):
         } for user in users ]
 
         return JsonResponse({'result':result_list}, status=200)
+        
+class PromiseView(View):
+    @authorization
+    def post(self, request):
+        try:
+            data         = json.loads(request.body)
+            requester    = request.user
+            respondent   = User.objects.get(id=data['respondent_id'])
+            string_date  = data['time']
+
+            date_format  = '%Y-%m-%d'
+            promise_date = datetime.strptime(string_date,date_format).date()
+
+            if datetime.now().date() >= promise_date:
+                return JsonResponse({'message':'DATE_ERROR'}, status=400)
+
+            if Meeting.objects.filter(requester=requester, time=promise_date).exists():
+                return JsonResponse({'message':'ALREADY_EXISTS'}, status=400)
+
+            Meeting.objects.create(requester=requester, respondent=respondent, time=promise_date)
+            return JsonResponse({'message':'SUCCESS'}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'message':'DoesNotExist'}, status=400)
