@@ -5,7 +5,7 @@ from django.http    import response
 
 from users.models   import *
 
-class ProductViewTest(TestCase):
+class UserListViewTest(TestCase):
     def setUp(self):
         self.client=Client()
 
@@ -79,50 +79,66 @@ class ProductViewTest(TestCase):
         AlcoholCategory.objects.all().delete(), 
         Gender.objects.all().delete()
 
-    def test_productview_get_success(self):
-        response = self.client.get('/users/1')
+    def test_userlistview_get_success(self):
+        response = self.client.get('/users?alcohol_category_id=1&offset=0&limit=1')
         self.assertEqual(response.json(),
         {
-            "result": {
-                "id": 1,
-                "profile_image_url": "https://www.notion.so/wecode/",
-                "text_name": "test",
-                "text_email": "abcd@abcd.abc",
-                "text_gender": "test",
-                "text_mbti_title": "test",
-                "text_mbti_description": "test",
-                "text_class_number": 1,
-                "text_comment": "test",
-                "text_favorite_place": "test",
-                "text_favorite_food": "test",
-                "text_favorite_hobby": "test",
-                "text_stack": "프론트",
-                "alcohol_limit": {
-                "name": "알쓰",
-                "is_matching": True
-                },
-                "alcohol_level": {
-                "name": "test",
-                "is_matching": True
-                },
-                "alcohol_drinking_methods": [
+            "result": [
                 {
+                    "id": 1,
                     "name": "test",
-                    "is_matching": True
-                }
-                ],
-                "alcohol_categories": [
-                {
-                    "name": "test",
-                    "is_matching": True
-                }
-                ],
-                "alcohol_flavors": [
-                    {
-                    "name": "test",
-                    "is_matching": True
+                    "class_number": 1,
+                    "profile_image_url": "https://www.notion.so/wecode/"
                 }
             ]
-        }
-    })
-        self.assertEqual(response.status_code, 200)
+        })
+        self.assertEqual(response.status_code, 200)        
+
+# class ProductViewTest(TestCase):
+#     def test_productview_get_success(self):
+#         response = self.client.get('/users/1')
+#         self.assertEqual(response.json(),
+#         {
+#             "result": {
+#                 "id": 1,
+#                 "profile_image_url": "https://www.notion.so/wecode/",
+#                 "text_name": "test",
+#                 "text_email": "abcd@abcd.abc",
+#                 "text_gender": "test",
+#                 "text_mbti_title": "test",
+#                 "text_mbti_description": "test",
+#                 "text_class_number": 1,
+#                 "text_comment": "test",
+#                 "text_favorite_place": "test",
+#                 "text_favorite_food": "test",
+#                 "text_favorite_hobby": "test",
+#                 "text_stack": "프론트",
+#                 "alcohol_limit": {
+#                 "name": "알쓰",
+#                 "is_matching": True
+#                 },
+#                 "alcohol_level": {
+#                 "name": "test",
+#                 "is_matching": True
+#                 },
+#                 "alcohol_drinking_methods": [
+#                 {
+#                     "name": "test",
+#                     "is_matching": True
+#                 }
+#                 ],
+#                 "alcohol_categories": [
+#                 {
+#                     "name": "test",
+#                     "is_matching": True
+#                 }
+#                 ],
+#                 "alcohol_flavors": [
+#                     {
+#                     "name": "test",
+#                     "is_matching": True
+#                 }
+#             ]
+#         }
+#     })
+#         self.assertEqual(response.status_code, 200)

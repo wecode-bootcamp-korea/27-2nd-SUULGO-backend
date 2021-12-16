@@ -1,5 +1,4 @@
-import requests
-import jwt
+import jwt, requests
 
 from django.views           import View
 from django.http            import JsonResponse
@@ -92,11 +91,11 @@ class AlcoholLimit(Enum):
     N     = 4
 
 class ProductView(View):
-    @authorization
+    # @authorization
     def get(self, request, product_id):
         try:
             product                 = Survey.objects.get(user=product_id)
-            user_survey             = Survey.objects.get(user=request.user)
+            user_survey             = Survey.objects.get(user=1)
             user_drinking_methods   = DrinkingMethod.objects.filter(surveys__id = user_survey.id)
             user_alcohol_categories = AlcoholCategory.objects.filter(surveys__id = user_survey.id)
             user_flavor             = Flavor.objects.filter(surveys__id = user_survey.id)
@@ -145,3 +144,20 @@ class ProductView(View):
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
 
+class UserListView(View): 
+    def get(self, request):
+        
+        offset              = int(request.GET.get("offset", 0))
+        limit               = int(request.GET.get("limit", 100))
+        alcohol_category_id = int(request.GET.get("alcohol_category_id", 0))
+
+        users = User.objects.filter(survey__surveyalcoholcategory__alcohol_category_id=alcohol_category_id).prefetch_related('survey_set')[offset:offset+limit]                    
+
+        result_list = [{
+            "id"                : user.id,
+            "name"              : user.name,
+            "class_number"      : Survey.objects.get(user=user).class_number,
+            "profile_image_url" : user.profile_image_url,
+        } for user in users ]
+
+        return JsonResponse({'result':result_list}, status=200)
