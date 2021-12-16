@@ -91,3 +91,17 @@ class User(TimeStampModel):
 
     class Meta:
         db_table = 'users'
+
+class Stack(models.Model): 
+    name   = models.CharField(max_length=20)
+    number = models.IntegerField()
+
+    class Meta: 
+        db_table = 'stacks'
+        
+class AlcoholLimit(models.Model): 
+    name   = models.CharField(max_length=20)
+    number = models.IntegerField()
+
+    class Meta: 
+        db_table = 'alcohol_limits'
