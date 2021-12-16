@@ -92,11 +92,11 @@ class AlcoholLimit(Enum):
     N     = 4
 
 class ProductView(View):
-    # @authorization
+    @authorization
     def get(self, request, product_id):
         try:
             product                 = Survey.objects.get(user=product_id)
-            user_survey             = Survey.objects.get(user=1)
+            user_survey             = Survey.objects.get(user=request.user)
             user_drinking_methods   = DrinkingMethod.objects.filter(surveys__id = user_survey.id)
             user_alcohol_categories = AlcoholCategory.objects.filter(surveys__id = user_survey.id)
             user_flavor             = Flavor.objects.filter(surveys__id = user_survey.id)
@@ -189,3 +189,19 @@ class PromiseView(View):
 
         except User.DoesNotExist:
             return JsonResponse({'message':'DoesNotExist'}, status=400)
+
+class PromiseAlarmView(View):
+    @authorization
+    def get(self, request):
+        meetings = Meeting.objects.filter(respondent=request.user, time__gte = datetime.now().date(), is_accept=False)
+
+        result = {
+            'count' : meetings.count(),
+            'requester' : [{
+                'id'            : meeting.requester.id,
+                'name'          : meeting.requester.name,
+                'profile_image' : meeting.requester.profile_image_url
+            } for meeting in meetings]
+        }
+
+        return JsonResponse({'message':result}, status=200)

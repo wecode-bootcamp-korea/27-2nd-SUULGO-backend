@@ -141,7 +141,7 @@ class ProductViewTest(TestCase):
         }
     })
         self.assertEqual(response.status_code, 200)
-        
+
 class KakaoLoginTest(TestCase):
     @patch("users.views.requests")
     def test_kakao_login_success(self, mocked_requests):
@@ -316,3 +316,108 @@ class PromiseViewTest(TestCase):
             "message": "DoesNotExist"
         })
         self.assertEqual(response.status_code, 400)
+
+class PromiseAlarmViewTest(TestCase):
+    def setUp(self):
+        self.client=Client()
+
+        User.objects.create(
+        id                = 1,
+        kakao_id          = "test",
+        name              = 'test',
+        profile_image_url = "https://www.notion.so/wecode/",
+        email             = "abcd@abcd.abc"
+    )
+        User.objects.create(
+        id                = 2,
+        kakao_id          = "test",
+        name              = 'test',
+        profile_image_url = "https://www.notion.so/wecode/",
+        email             = "abcde@abcd.abc"
+    )
+        AlcoholCategory.objects.create(      
+        id   = 1,
+        name = "test"     
+    )
+        Gender.objects.create(
+        id   = 1,
+        name = "test"
+    )
+        Mbti.objects.create(
+        id          = 1,
+        information = "test",
+        name        = "test"
+    )
+        Survey.objects.create(
+        id             = 1,
+        gender         = Gender.objects.get(id=1),
+        mbti           = Mbti.objects.get(id=1),
+        class_number   = 1,
+        stack          = 1,
+        alcohol_limit  = 1,
+        alcohol_level  = "test",
+        comment        = "test",
+        favorite_place = "test",
+        favorite_food  = "test",
+        hobby          = "test",
+        user           = User.objects.get(id=1)
+    )
+        SurveyAlcoholCategory.objects.create(
+        id               = 1,
+        alcohol_category = AlcoholCategory.objects.get(id=1),
+        survey           = Survey.objects.get(id=1) 
+    )
+        DrinkingMethod.objects.create(
+        id   = 1,
+        name = "test"  
+    )
+        SurveyDrinkingMethod.objects.create(
+        id              = 1,
+        drinking_method = DrinkingMethod.objects.get(id=1),
+        survey          = Survey.objects.get(id=1) 
+    )
+        Flavor.objects.create(
+        id   = 1,
+        name = "test"
+    )
+        SurveyFlavor.objects.create(
+        id     = 1,
+        flavor = Flavor.objects.get(id=1),
+        survey = Survey.objects.get(id=1)
+    )
+        Meeting.objects.create(
+        id         = 1,
+        requester  = User.objects.get(id=1),
+        respondent = User.objects.get(id=2),
+        time       = "2021-12-25"
+        ),
+
+    def tearDown(self):
+        DrinkingMethod.objects.all().delete(), 
+        Flavor.objects.all().delete(), 
+        Mbti.objects.all().delete(), 
+        SurveyAlcoholCategory.objects.all().delete(), 
+        Survey.objects.all().delete(), 
+        SurveyDrinkingMethod.objects.all().delete(), 
+        SurveyFlavor.objects.all().delete(), 
+        User.objects.all().delete(), 
+        AlcoholCategory.objects.all().delete(), 
+        Gender.objects.all().delete()
+        Meeting.objects.all().delete()
+
+    def test_promisealarmview_get_success(self):
+        response = self.client.get('/users/promise-alarm')
+        self.assertEqual(response.json(),
+        {
+            "message": {
+                "count": 1,
+                "requester": [
+                    {
+                        "id": 1,
+                        "name": "test",
+                        "profile_image": "https://www.notion.so/wecode/"
+                    }
+                ]
+            }
+        })
+        self.assertEqual(response.status_code, 200)
