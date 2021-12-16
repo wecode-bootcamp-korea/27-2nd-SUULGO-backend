@@ -19,8 +19,9 @@ class Meeting(TimeStampModel):
     requester  = models.ForeignKey('User', on_delete=models.CASCADE, related_name='requester')
     respondent = models.ForeignKey('User', on_delete=models.CASCADE, related_name='respondent')
     time       = models.DateTimeField()
-
-    class Meta:
+    is_accept  = models.BooleanField(default=False)
+    
+    class Meta: 
         db_table = 'meetings'
 
 class SurveyDrinkingMethod(models.Model):
