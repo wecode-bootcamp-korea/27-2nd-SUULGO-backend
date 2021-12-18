@@ -30,12 +30,17 @@ class ProductView(View):
             #각자 주량을 구해 일치여부 확인
             #각자 도수를 구해 일치여부 확인
             
-
-
-
-
-
-            return JsonResponse({ "result" : result }, status=200)
+            request.user            = 5 #로그인이 아직 구현되지 않아 임시로 5번 유저 아이디를 지정하였습니다.
+            product                 = Survey.objects.get(user=product_id)
+            user                    = Survey.objects.get(user=request.user)
+            print(product,user)
+            result = [
+                product.alcohol_limit,
+                product.alcohol_level,
+                user.alcohol_limit,
+                user.alcohol_level
+            ]
+            return JsonResponse({ "message" : result }, status=200)
 
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
