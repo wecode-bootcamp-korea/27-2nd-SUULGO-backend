@@ -15,7 +15,7 @@ def authorization(func):
 
             payload      = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
             request.user = User.objects.get(id = payload['id'])
-            
+
             return func(self, request, *args, **kwargs)
 
         except jwt.exceptions.DecodeError:
@@ -24,4 +24,4 @@ def authorization(func):
         except User.DoesNotExist:
             return JsonResponse({'message':'INVALID_USER'}, status=401)
 
-    return wrapper 
+    return wrapper
