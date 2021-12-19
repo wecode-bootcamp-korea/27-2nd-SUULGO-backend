@@ -1,4 +1,4 @@
-import json, requests, jwt
+import jwt, json, requests
 
 from django.views           import View
 from django.http            import JsonResponse
@@ -52,7 +52,8 @@ class KakaoLoginView(View):
             name              = user_info["properties"]["nickname"]
             profile_image_url = user_info["kakao_account"]["profile"]["profile_image_url"]
             email             = user_info["kakao_account"]["email"]
-
+            
+            
             user, created = User.objects.get_or_create(
                 kakao_id          = kakao_id,
                 name              = name,
@@ -68,7 +69,7 @@ class KakaoLoginView(View):
 
             token   = jwt.encode(payload, SECRET_KEY, ALGORITHM)
 
-            return JsonResponse({"message": "SUCCESS", "token": token, "result": user_info, "survey": Survey.objects.filter(id=user.id).exists()}, status=200)
+            return JsonResponse({"message": "SUCCESS", "token": token, "result": user_info, "survey": Survey.objects.filter(user_id=user.id).exists()}, status=200)
 
         except ValidationError:
             return JsonResponse({"message": "VALIDATION_ERROR"}, status=400)
@@ -279,4 +280,3 @@ class MatchingListView(View):
 
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
-            
