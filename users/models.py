@@ -2,39 +2,39 @@ from django.db   import models
 
 from core.models import TimeStampModel
 
-class Mbti(models.Model): 
+class Mbti(models.Model):
     name        = models.CharField(max_length=20)
     information = models.CharField(max_length=200)
 
-    class Meta: 
+    class Meta:
         db_table = 'mbtis'
-        
-class Gender(models.Model): 
+
+class Gender(models.Model):
     name = models.CharField(max_length=20)
 
-    class Meta: 
+    class Meta:
         db_table = 'genders'
 
-class Meeting(TimeStampModel): 
+class Meeting(TimeStampModel):
     requester  = models.ForeignKey('User', on_delete=models.CASCADE, related_name='requester')
     respondent = models.ForeignKey('User', on_delete=models.CASCADE, related_name='respondent')
     time       = models.DateTimeField()
 
-    class Meta: 
+    class Meta:
         db_table = 'meetings'
 
-class SurveyDrinkingMethod(models.Model): 
+class SurveyDrinkingMethod(models.Model):
     drinking_method = models.ForeignKey('DrinkingMethod', on_delete=models.CASCADE)
     survey          = models.ForeignKey('Survey', on_delete=models.CASCADE)
 
-    class Meta: 
+    class Meta:
         db_table = 'survey_drinking_methods'
 
-class DrinkingMethod(models.Model): 
+class DrinkingMethod(models.Model):
     name    = models.CharField(max_length=10)
     surveys = models.ManyToManyField('Survey', through=SurveyDrinkingMethod)
 
-    class Meta: 
+    class Meta:
         db_table = 'drinking_methods'
 
 class SurveyFlavor(models.Model):
@@ -44,7 +44,7 @@ class SurveyFlavor(models.Model):
     class Meta:
         db_table = 'survey_flavors'
 
-class Flavor(models .Model):
+class Flavor(models.Model):
     name    = models.CharField(max_length=10)
     surveys = models.ManyToManyField('Survey', through=SurveyFlavor)
 
@@ -77,7 +77,7 @@ class Survey(TimeStampModel):
     favorite_food  = models.CharField(max_length=200)
     hobby          = models.CharField(max_length=200)
     deleted_at     = models.DateTimeField(null=True)
-    user           = models.ForeignKey('User', on_delete=models.CASCADE)      
+    user           = models.ForeignKey('User', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'surveys'
