@@ -90,51 +90,46 @@ class UserView(View):
     @authorization
     def get(self, request, user_id):
         try:
-            product                 = Survey.objects.get(user=user_id)
+            opponent                = Survey.objects.get(user=user_id)
             user_survey             = Survey.objects.get(user=request.user)
-            user_drinking_methods   = DrinkingMethod.objects.filter(surveys__id = user_survey.id)
-            user_alcohol_categories = AlcoholCategory.objects.filter(surveys__id = user_survey.id)
-            user_flavor             = Flavor.objects.filter(surveys__id = user_survey.id)
-            
-
-            # 지우고 테이블 추가할 것..
-            # stack_dict = {1:"프론트", 2:"백"}
-            # alcohol_limit_dict = {1:"알쓰", 2:"반병", 3:"한병", 4:"N병"}
+            user_drinking_methods   = user_survey.drinking_methods.all()
+            user_alcohol_categories = user_survey.alcohol_categories.all()
+            user_flavors            = user_survey.flavors.all()
 
             result = {
-                "id"                       : product.user.id,
-                "profile_image_url"        : product.user.profile_image_url,
-                "text_name"                : product.user.name,
-                "text_email"               : product.user.email,
-                "text_gender"              : product.gender.name,
-                "text_mbti_title"          : product.mbti.name,
-                "text_mbti_description"    : product.mbti.information,
-                "text_class_number"        : product.class_number,
-                "text_comment"             : product.comment,
-                "text_favorite_place"      : product.favorite_place,
-                "text_favorite_food"       : product.favorite_food,
-                "text_favorite_hobby"      : product.hobby,
-                "text_stack"               : stack_dict.get(product.stack),
+                "id"                       : opponent.user.id,
+                "profile_image_url"        : opponent.user.profile_image_url,
+                "text_name"                : opponent.user.name,
+                "text_email"               : opponent.user.email,
+                "text_gender"              : opponent.gender.name,
+                "text_mbti_title"          : opponent.mbti.name,
+                "text_mbti_description"    : opponent.mbti.information,
+                "text_class_number"        : opponent.class_number,
+                "text_comment"             : opponent.comment,
+                "text_favorite_place"      : opponent.favorite_place,
+                "text_favorite_food"       : opponent.favorite_food,
+                "text_favorite_hobby"      : opponent.hobby,
+                "text_stack"               : opponent.stack.name,
                 "alcohol_limit"            : {
-                    "name" : alcohol_limit_dict.get(product.alcohol_limit),
-                    "is_matching" : product.alcohol_limit == user_survey.alcohol_limit
+                    "name"                 : opponent.alcohol_limit.name,
+                    "is_matching"          : opponent.alcohol_limit.name == user_survey.alcohol_limit.name
                     },
                 "alcohol_level"            : {
-                    "name" : product.alcohol_level,
-                    "is_matching" : product.alcohol_level == user_survey.alcohol_level
+                    "name"                 : opponent.alcohol_level,
+                    "is_matching"          : opponent.alcohol_level == user_survey.alcohol_level
                     },
                 "alcohol_drinking_methods" : [{
-                    "name" : product_drinking.drinking_method.name,
-                    "is_matching" : product_drinking.drinking_method in user_drinking_methods
-                    } for product_drinking in product.surveydrinkingmethod_set.prefetch_related("drinking_method")],
+                    "name"                 : opponent_drinking.name,
+                    "is_matching"          : opponent_drinking in user_drinking_methods
+                    } for opponent_drinking in opponent.drinking_methods.all()],
                 "alcohol_categories"       : [{
-                    "name" : product_alcohol_category.alcohol_category.name,
-                    "is_matching" : product_alcohol_category.alcohol_category in user_alcohol_categories
-                    } for product_alcohol_category in product.surveyalcoholcategory_set.prefetch_related("alcohol_category")],
+                    "name"                 : opponent_alcohol_category.name,
+                    "is_matching"          : opponent_alcohol_category in user_alcohol_categories
+                    } for opponent_alcohol_category in opponent.alcohol_categories.all()],
                 "alcohol_flavors"          : [{
-                    "name" : product_flavor.flavor.name,
-                    "is_matching" : product_flavor.flavor in user_flavor
-                    } for product_flavor in product.surveyflavor_set.prefetch_related("flavor")]
+                    "name"                 : opponent_flavor.name,
+                    "is_matching"          : opponent_flavor in user_flavors
+                    } for opponent_flavor in opponent.flavors.all()]
             }
 
             return JsonResponse({ "result" : result }, status=200)
@@ -160,7 +155,7 @@ class UserListView(View):
 
         return JsonResponse({'result':result_list}, status=200)
 
-class PromiseView(View):
+class AppointmentView(View):
     @authorization
     def post(self, request):
         try:
@@ -187,7 +182,7 @@ class PromiseView(View):
         except User.DoesNotExist:
             return JsonResponse({'message':'DoesNotExist'}, status=400)
 
-class PromiseAlarmView(View):
+class AppointmentAlarmView(View):
     @authorization
     def get(self, request):
         meetings = Meeting.objects.filter(respondent=request.user, time__gte = datetime.now().date(), is_accept=False)
