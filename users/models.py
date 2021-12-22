@@ -15,6 +15,20 @@ class Gender(models.Model):
     class Meta:
         db_table = 'genders'
 
+class Stack(models.Model): 
+    name   = models.CharField(max_length=20)
+    number = models.IntegerField()
+
+    class Meta: 
+        db_table = 'stacks'
+        
+class AlcoholLimit(models.Model): 
+    name   = models.CharField(max_length=20)
+    number = models.IntegerField()
+
+    class Meta: 
+        db_table = 'alcohol_limits'
+
 class Meeting(TimeStampModel):
     requester  = models.ForeignKey('User', on_delete=models.CASCADE, related_name='requester')
     respondent = models.ForeignKey('User', on_delete=models.CASCADE, related_name='respondent')
@@ -33,7 +47,7 @@ class SurveyDrinkingMethod(models.Model):
 
 class DrinkingMethod(models.Model):
     name    = models.CharField(max_length=10)
-    surveys = models.ManyToManyField('Survey', through=SurveyDrinkingMethod)
+    surveys = models.ManyToManyField('Survey', through=SurveyDrinkingMethod, related_name="drinking_methods")
 
     class Meta:
         db_table = 'drinking_methods'
@@ -47,7 +61,7 @@ class SurveyFlavor(models.Model):
 
 class Flavor(models.Model):
     name    = models.CharField(max_length=10)
-    surveys = models.ManyToManyField('Survey', through=SurveyFlavor)
+    surveys = models.ManyToManyField('Survey', through=SurveyFlavor, related_name="flavors")
 
     class Meta:
         db_table = 'flavors'
@@ -61,7 +75,7 @@ class SurveyAlcoholCategory(models.Model):
 
 class AlcoholCategory(models.Model):
     name    = models.CharField(max_length=10)
-    surveys = models.ManyToManyField('Survey', through=SurveyAlcoholCategory)
+    surveys = models.ManyToManyField('Survey', through=SurveyAlcoholCategory, related_name="alcohol_categories")
 
     class Meta:
         db_table = 'alcohol_categories'
@@ -70,15 +84,15 @@ class Survey(TimeStampModel):
     gender         = models.ForeignKey('Gender', on_delete=models.CASCADE)
     mbti           = models.ForeignKey('Mbti', on_delete=models.CASCADE)
     class_number   = models.PositiveSmallIntegerField()
-    stack          = models.IntegerField()
-    alcohol_limit  = models.IntegerField()
+    stack          = models.ForeignKey('Stack', on_delete=models.CASCADE)
+    alcohol_limit  = models.ForeignKey('AlcoholLimit', on_delete=models.CASCADE)
     alcohol_level  = models.CharField(max_length=100)
     comment        = models.CharField(max_length=500)
     favorite_place = models.CharField(max_length=200)
     favorite_food  = models.CharField(max_length=200)
     hobby          = models.CharField(max_length=200)
     deleted_at     = models.DateTimeField(null=True)
-    user           = models.ForeignKey('User', on_delete=models.CASCADE)
+    user           = models.ForeignKey('User', on_delete=models.CASCADE, unique=True)
 
     class Meta:
         db_table = 'surveys'
@@ -92,17 +106,3 @@ class User(TimeStampModel):
 
     class Meta:
         db_table = 'users'
-
-class Stack(models.Model): 
-    name   = models.CharField(max_length=20)
-    number = models.IntegerField()
-
-    class Meta: 
-        db_table = 'stacks'
-        
-class AlcoholLimit(models.Model): 
-    name   = models.CharField(max_length=20)
-    number = models.IntegerField()
-
-    class Meta: 
-        db_table = 'alcohol_limits'
