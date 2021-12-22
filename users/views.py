@@ -57,11 +57,11 @@ class KakaoLoginView(View):
                 kakao_id          = kakao_id,
                 name              = name,
                 email             = email,
-                defaults          = {profile_image_url : profile_image_url}
+                defaults          = {"profile_image_url" : profile_image_url}
             )
 
             User.objects.filter(kakao_id=kakao_id).update(
-                 profile_image_url = profile_image_url
+                profile_image_url = profile_image_url
             )
 
             payload = {'id' : user.id}
@@ -86,18 +86,20 @@ class AlcoholLimit(Enum):
     ONE   = 3
     N     = 4
 
-class ProductView(View):
+class UserView(View):
     @authorization
-    def get(self, request, product_id):
+    def get(self, request, user_id):
         try:
-            product                 = Survey.objects.get(user=product_id)
+            product                 = Survey.objects.get(user=user_id)
             user_survey             = Survey.objects.get(user=request.user)
             user_drinking_methods   = DrinkingMethod.objects.filter(surveys__id = user_survey.id)
             user_alcohol_categories = AlcoholCategory.objects.filter(surveys__id = user_survey.id)
             user_flavor             = Flavor.objects.filter(surveys__id = user_survey.id)
+            
 
-            stack_dict = {1:"프론트", 2:"백"}
-            alcohol_limit_dict = {1:"알쓰", 2:"반병", 3:"한병", 4:"N병"}
+            # 지우고 테이블 추가할 것..
+            # stack_dict = {1:"프론트", 2:"백"}
+            # alcohol_limit_dict = {1:"알쓰", 2:"반병", 3:"한병", 4:"N병"}
 
             result = {
                 "id"                       : product.user.id,
