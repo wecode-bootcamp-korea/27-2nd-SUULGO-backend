@@ -7,7 +7,7 @@ from enum                   import Enum
 
 from users.models           import *
 from datetime               import datetime
-from core.utils             import authorization
+from core.utils             import KakaoAPI, authorization
 from suulgo.settings        import SECRET_KEY, ALGORITHM
 
 class ProfileView(View):
@@ -38,48 +38,43 @@ class ProfileView(View):
                 ]
         }
 
-        return JsonResponse({"RESULT": results, "MESSAGE": "SUCCESS"}, status=200)
+        return JsonResponse({"result": results, "message": "SUCCESS"}, status=200)
 
 class KakaoLoginView(View):
     def get(self, request):
         try:
             access_token = request.headers['Authorization']
-            url          = 'https://kapi.kakao.com/v2/user/me'
-            headers      = {
-                "Authorization": f"Bearer {access_token}",
-            }
-            result       = requests.get(url,headers=headers).json()
 
-            kakao_id          = result["id"]
-            name              = result["properties"]["nickname"]
-            profile_image_url = result["kakao_account"]["profile"]["profile_image_url"]
-            email             = result["kakao_account"]["email"]
+            kakao_client = KakaoAPI(access_token)
+            user_info = kakao_client.get_user()
 
-            User.objects.filter(kakao_id=kakao_id).update(
-                profile_image_url = profile_image_url
-            )
+            kakao_id          = user_info["id"]
+            name              = user_info["properties"]["nickname"]
+            profile_image_url = user_info["kakao_account"]["profile"]["profile_image_url"]
+            email             = user_info["kakao_account"]["email"]
 
             user, created = User.objects.get_or_create(
                 kakao_id          = kakao_id,
                 name              = name,
                 email             = email,
-                profile_image_url = profile_image_url
+                defaults          = {profile_image_url : profile_image_url}
+            )
+
+            User.objects.filter(kakao_id=kakao_id).update(
+                 profile_image_url = profile_image_url
             )
 
             payload = {'id' : user.id}
 
             token   = jwt.encode(payload, SECRET_KEY, ALGORITHM)
 
-            if Survey.objects.filter(id=user.id).exists():
-                return JsonResponse({"MESSAGE": "SUCCESS", "TOKEN": token, "RESULT": result, "SURVEY": True}, status=200)
-            else:
-                return JsonResponse({"MESSAGE": "SUCCESS", "TOKEN": token, "RESULT": result, "SURVEY": False}, status=200)
+            return JsonResponse({"message": "SUCCESS", "token": token, "result": user_info, "survey": Survey.objects.filter(id=user.id).exists()}, status=200)
 
         except ValidationError:
-            return JsonResponse({"MESSAGE": "VALIDATION_ERROR"}, status=400)
+            return JsonResponse({"message": "VALIDATION_ERROR"}, status=400)
 
         except KeyError:
-            return JsonResponse({"MESSAGE": "KEY_ERROR"}, status=400)
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
 class Stack(Enum):
     FRONT = 1
@@ -114,28 +109,28 @@ class ProductView(View):
                 "text_mbti_description"    : product.mbti.information,
                 "text_class_number"        : product.class_number,
                 "text_comment"             : product.comment,
-                "text_favorite_place"      : product.favorite_place, 
-                "text_favorite_food"       : product.favorite_food, 
+                "text_favorite_place"      : product.favorite_place,
+                "text_favorite_food"       : product.favorite_food,
                 "text_favorite_hobby"      : product.hobby,
                 "text_stack"               : stack_dict.get(product.stack),
                 "alcohol_limit"            : {
                     "name" : alcohol_limit_dict.get(product.alcohol_limit),
-                    "is_matching" : product.alcohol_limit == user_survey.alcohol_limit 
+                    "is_matching" : product.alcohol_limit == user_survey.alcohol_limit
                     },
-                "alcohol_level"            : { 
-                    "name" : product.alcohol_level, 
-                    "is_matching" : product.alcohol_level == user_survey.alcohol_level 
+                "alcohol_level"            : {
+                    "name" : product.alcohol_level,
+                    "is_matching" : product.alcohol_level == user_survey.alcohol_level
                     },
                 "alcohol_drinking_methods" : [{
-                    "name" : product_drinking.drinking_method.name, 
+                    "name" : product_drinking.drinking_method.name,
                     "is_matching" : product_drinking.drinking_method in user_drinking_methods
                     } for product_drinking in product.surveydrinkingmethod_set.prefetch_related("drinking_method")],
                 "alcohol_categories"       : [{
-                    "name" : product_alcohol_category.alcohol_category.name, 
+                    "name" : product_alcohol_category.alcohol_category.name,
                     "is_matching" : product_alcohol_category.alcohol_category in user_alcohol_categories
                     } for product_alcohol_category in product.surveyalcoholcategory_set.prefetch_related("alcohol_category")],
                 "alcohol_flavors"          : [{
-                    "name" : product_flavor.flavor.name, 
+                    "name" : product_flavor.flavor.name,
                     "is_matching" : product_flavor.flavor in user_flavor
                     } for product_flavor in product.surveyflavor_set.prefetch_related("flavor")]
             }
@@ -145,14 +140,14 @@ class ProductView(View):
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
 
-class UserListView(View): 
+class UserListView(View):
     def get(self, request):
-        
+
         offset              = int(request.GET.get("offset", 0))
         limit               = int(request.GET.get("limit", 100))
         alcohol_category_id = int(request.GET.get("alcohol_category_id", 0))
 
-        users = User.objects.filter(survey__surveyalcoholcategory__alcohol_category_id=alcohol_category_id).prefetch_related('survey_set')[offset:offset+limit]                    
+        users = User.objects.filter(survey__surveyalcoholcategory__alcohol_category_id=alcohol_category_id).prefetch_related('survey_set')[offset:offset+limit]
 
         result_list = [{
             "id"                : user.id,
@@ -162,7 +157,7 @@ class UserListView(View):
         } for user in users ]
 
         return JsonResponse({'result':result_list}, status=200)
-        
+
 class PromiseView(View):
     @authorization
     def post(self, request):
@@ -183,7 +178,7 @@ class PromiseView(View):
 
             Meeting.objects.create(requester=requester, respondent=respondent, time=promise_date)
             return JsonResponse({'message':'SUCCESS'}, status=200)
-        
+
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
