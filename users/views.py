@@ -6,13 +6,8 @@ from django.core.exceptions import ValidationError
 from enum                   import Enum
 
 from users.models           import *
-<<<<<<< HEAD
 from datetime               import datetime
-=======
-from core.utils             import KakaoAPI
-from suulgo.settings        import SECRET_KEY, ALGORITHM
->>>>>>> 5d1afe1 (modified kakaologinview & added kakaopai in core app)
-from core.utils             import authorization
+from core.utils             import KakaoAPI, authorization
 from suulgo.settings        import SECRET_KEY, ALGORITHM
 
 class ProfileView(View):
@@ -145,14 +140,14 @@ class ProductView(View):
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
 
-class UserListView(View): 
+class UserListView(View):
     def get(self, request):
-        
+
         offset              = int(request.GET.get("offset", 0))
         limit               = int(request.GET.get("limit", 100))
         alcohol_category_id = int(request.GET.get("alcohol_category_id", 0))
 
-        users = User.objects.filter(survey__surveyalcoholcategory__alcohol_category_id=alcohol_category_id).prefetch_related('survey_set')[offset:offset+limit]                    
+        users = User.objects.filter(survey__surveyalcoholcategory__alcohol_category_id=alcohol_category_id).prefetch_related('survey_set')[offset:offset+limit]
 
         result_list = [{
             "id"                : user.id,
@@ -162,7 +157,7 @@ class UserListView(View):
         } for user in users ]
 
         return JsonResponse({'result':result_list}, status=200)
-        
+
 class PromiseView(View):
     @authorization
     def post(self, request):
@@ -183,7 +178,7 @@ class PromiseView(View):
 
             Meeting.objects.create(requester=requester, respondent=respondent, time=promise_date)
             return JsonResponse({'message':'SUCCESS'}, status=200)
-        
+
         except KeyError:
             return JsonResponse({'message':'KEY_ERROR'}, status=400)
 
