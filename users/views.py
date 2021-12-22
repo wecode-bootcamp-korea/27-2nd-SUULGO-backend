@@ -197,3 +197,86 @@ class AppointmentAlarmView(View):
         }
 
         return JsonResponse({'message':result}, status=200)
+
+class MatchingListView(View):
+    @authorization
+    def get(self, request):
+        try:
+            # 술 주량 일치여부 : 19% 
+            # 술 도수 일치여부 : 19% 
+            # 술 마시는 방법 일치여부 : 20% (중복)(개당 추가 점수) 
+            # 선호하는 술 종류 일치여부 : 22% (중복)(개당 추가 점수)
+            # 선호하는 술 맛 일치여부 : 20% (중복)(개당 추가 점수)
+            # (현재 설문조사 받는 중)
+            # <코드 구현 사항>
+            # 상대방 아이디로 서베이 인스턴스 구하기 
+            # 본인 서베이 인스턴스 구하기 
+            # 각자 주량을 구해 일치여부 확인 
+            # 각자 도수를 구해 일치여부 확인
+            # 술 마시는 방법 일치 개수 확인 개당
+            # 선호하는 술 종류 일치 개수 확인 개당
+            # 선호하는 술 맛 일치 개수 확인 개당
+
+            # 만약 가중치를 유저별로 테이블에 저장하면 개인별 맞춤 매칭도 가능하다.
+			# 지금은 전체 평균에 대한 가중치
+            drinking_method_weight  = 20
+            flavor_weight           = 20
+            alcohol_category_weight = 22
+            alcohol_limit_weight    = 19
+            alcohol_level_weight    = 19
+
+            # 상대유저와 유저를 구하고, 유저의 중복선택 항목들을 리스트로 가져옴
+            opponents               = Survey.objects.exclude(user = request.user) 
+            user                    = Survey.objects.get(user = request.user)
+            user_drinking_methods   = user.drinking_methods.all()
+            user_alcohol_categories = user.alcohol_categories.all()
+            user_survey_flavors     = user.flavors.all()
+
+            # 일치하면 1, 아니면 0 점 임, if는 쓰지 않겠다는 굳은 의지!
+            matching_point_dict = { True : 1, False : 0 }
+            matching_list_dict  = {}
+
+            # for를 돌리는 이유는 user는 한 명이지만 상대유저들은 여러개이기 때문
+            for opponent in opponents:
+                matching_point = 0
+                
+                # 일치여부 항목에 대한 가중치 계산
+                alcohol_limit_point = matching_point_dict.get(opponent.alcohol_limit == user.alcohol_limit) * alcohol_limit_weight
+                alcohol_level_point = matching_point_dict.get(opponent.alcohol_level == user.alcohol_level) * alcohol_level_weight
+                
+                opponent_drinking_methods   = opponent.drinking_methods.all()
+                opponent_alcohol_categories = opponent.alcohol_categories.all()
+                opponent_survey_flavors     = opponent.flavors.all()
+
+                # for 문을 돌리는 이유는 유저가 가진 리스트와 상대 유저가 가진 리스트를 비교해야하기 때문임
+                for user_drinking_method in user_drinking_methods:
+                    matching_point += matching_point_dict.get(user_drinking_method in opponent_drinking_methods) * drinking_method_weight
+                
+                for user_alcohol_categorie in user_alcohol_categories:
+                    matching_point += matching_point_dict.get(user_alcohol_categorie in opponent_alcohol_categories) * alcohol_category_weight
+
+                for user_survey_flavor in user_survey_flavors:
+                    matching_point += matching_point_dict.get(user_survey_flavor in opponent_survey_flavors) * flavor_weight
+
+                #전체 항목에 대한 매칭 포인트를 합산함
+                total_matching_point = alcohol_limit_point + alcohol_level_point + matching_point
+
+                #매칭 포인트와 상대유저 아이디를 딕셔너리로 만듬
+                matching_list_dict[opponent.id] = total_matching_point 
+
+            #딕셔너리를 값인 매칭포인트 순으로 정렬함(튜플 형태로 만들어 줌)
+            sorted_matching_list = sorted(matching_list_dict.items(), key=lambda x: x[1], reverse = True)
+            
+            result = [{
+                'matching_point'    : sorted_opponent[1], # 튜플 내 두번째 값인 매칭 포인트를 보여줌
+                'id'                : Survey.objects.get(id=sorted_opponent[0]).user.id,
+                'name'              : Survey.objects.get(id=sorted_opponent[0]).user.name,
+                'class_number'      : Survey.objects.get(id=sorted_opponent[0]).class_number,
+                'profile_image_url' : Survey.objects.get(id=sorted_opponent[0]).user.profile_image_url
+            } for sorted_opponent in sorted_matching_list[:9]] # 최대 9명만 보내줌 
+
+            return JsonResponse({ "result" : result }, status=200)
+
+        except Survey.DoesNotExist:
+            return JsonResponse({ "message" : "DoesNotExist" }, status=400)
+            
