@@ -1,9 +1,11 @@
 import jwt
+import requests
 
-from django.http     import JsonResponse
+from django.http            import JsonResponse
+from django.core.exceptions import ValidationError
 
-from users.models    import User
-from suulgo.settings import SECRET_KEY, ALGORITHM
+from users.models           import User
+from suulgo.settings        import SECRET_KEY, ALGORITHM
 
 def authorization(func):
     def wrapper(self, request, *args, **kwargs):
@@ -25,3 +27,17 @@ def authorization(func):
             return JsonResponse({'message':'INVALID_USER'}, status=401)
 
     return wrapper
+
+class KakaoAPI:
+    def __init__(self, access_token):
+        self.access_token = access_token
+
+    def get_user(self):
+        self.url = 'https://kapi.kakao.com/v2/user/me'
+        self.headers = {
+            "Authorization": f"Bearer {self.access_token}"
+        }
+
+        result = requests.get(self.url, headers=self.headers).json()
+
+        return result

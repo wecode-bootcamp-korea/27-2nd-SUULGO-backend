@@ -15,9 +15,9 @@ class UserListViewTest(TestCase):
         profile_image_url = "https://www.notion.so/wecode/",
         email             = "abcd@abcd.abc"
     )
-        AlcoholCategory.objects.create(      
+        AlcoholCategory.objects.create(
         id   = 1,
-        name = "test"     
+        name = "test"
     )
         Gender.objects.create(
         id   = 1,
@@ -45,11 +45,11 @@ class UserListViewTest(TestCase):
         SurveyAlcoholCategory.objects.create(
         id                  = 1,
         alcohol_category_id = 1,
-        survey_id           = 1 
+        survey_id           = 1
     )
         DrinkingMethod.objects.create(
         id   = 1,
-        name = "test"  
+        name = "test"
     )
         SurveyDrinkingMethod.objects.create(
         id                 = 1,
@@ -67,15 +67,15 @@ class UserListViewTest(TestCase):
     )
 
     def tearDown(self):
-        DrinkingMethod.objects.all().delete(), 
-        Flavor.objects.all().delete(), 
-        Mbti.objects.all().delete(), 
-        SurveyAlcoholCategory.objects.all().delete(), 
-        Survey.objects.all().delete(), 
-        SurveyDrinkingMethod.objects.all().delete(), 
-        SurveyFlavor.objects.all().delete(), 
-        User.objects.all().delete(), 
-        AlcoholCategory.objects.all().delete(), 
+        DrinkingMethod.objects.all().delete(),
+        Flavor.objects.all().delete(),
+        Mbti.objects.all().delete(),
+        SurveyAlcoholCategory.objects.all().delete(),
+        Survey.objects.all().delete(),
+        SurveyDrinkingMethod.objects.all().delete(),
+        SurveyFlavor.objects.all().delete(),
+        User.objects.all().delete(),
+        AlcoholCategory.objects.all().delete(),
         Gender.objects.all().delete()
 
     def test_userlistview_get_success(self):
@@ -91,7 +91,7 @@ class UserListViewTest(TestCase):
                 }
             ]
         })
-        self.assertEqual(response.status_code, 200)        
+        self.assertEqual(response.status_code, 200)
 
 class ProductViewTest(TestCase):
     def test_productview_get_success(self):
@@ -178,7 +178,7 @@ class KakaoLoginTest(TestCase):
         mocked_requests.get = mock.MagicMock(return_value = MockedResponse())
         headers             = {"HTTP_Authorization": "access_token"}
         response            = client.get("/users/kakaologin", **headers)
-        
+
         self.assertEqual(response.status_code, 200)
 
 class PromiseViewTest(TestCase):
@@ -199,9 +199,9 @@ class PromiseViewTest(TestCase):
         profile_image_url = "https://www.notion.so/wecode/",
         email             = "abcde@abcd.abc"
     )
-        AlcoholCategory.objects.create(      
+        AlcoholCategory.objects.create(
         id   = 1,
-        name = "test"     
+        name = "test"
     )
         Gender.objects.create(
         id   = 1,
@@ -229,16 +229,16 @@ class PromiseViewTest(TestCase):
         SurveyAlcoholCategory.objects.create(
         id               = 1,
         alcohol_category = AlcoholCategory.objects.get(id=1),
-        survey           = Survey.objects.get(id=1) 
+        survey           = Survey.objects.get(id=1)
     )
         DrinkingMethod.objects.create(
         id   = 1,
-        name = "test"  
+        name = "test"
     )
         SurveyDrinkingMethod.objects.create(
         id              = 1,
         drinking_method = DrinkingMethod.objects.get(id=1),
-        survey          = Survey.objects.get(id=1) 
+        survey          = Survey.objects.get(id=1)
     )
         Flavor.objects.create(
         id   = 1,
@@ -257,15 +257,15 @@ class PromiseViewTest(TestCase):
         ),
 
     def tearDown(self):
-        DrinkingMethod.objects.all().delete(), 
-        Flavor.objects.all().delete(), 
-        Mbti.objects.all().delete(), 
-        SurveyAlcoholCategory.objects.all().delete(), 
-        Survey.objects.all().delete(), 
-        SurveyDrinkingMethod.objects.all().delete(), 
-        SurveyFlavor.objects.all().delete(), 
-        User.objects.all().delete(), 
-        AlcoholCategory.objects.all().delete(), 
+        DrinkingMethod.objects.all().delete(),
+        Flavor.objects.all().delete(),
+        Mbti.objects.all().delete(),
+        SurveyAlcoholCategory.objects.all().delete(),
+        Survey.objects.all().delete(),
+        SurveyDrinkingMethod.objects.all().delete(),
+        SurveyFlavor.objects.all().delete(),
+        User.objects.all().delete(),
+        AlcoholCategory.objects.all().delete(),
         Gender.objects.all().delete()
         Meeting.objects.all().delete()
 
@@ -292,7 +292,7 @@ class PromiseViewTest(TestCase):
             "message": "DATE_ERROR"
         })
         self.assertEqual(response.status_code, 400)
-        
+
     def test_promiseview_post_already_exists_error(self):
         promise = {
             "respondent_id" : 2,
@@ -335,9 +335,9 @@ class PromiseAlarmViewTest(TestCase):
         profile_image_url = "https://www.notion.so/wecode/",
         email             = "abcde@abcd.abc"
     )
-        AlcoholCategory.objects.create(      
+        AlcoholCategory.objects.create(
         id   = 1,
-        name = "test"     
+        name = "test"
     )
         Gender.objects.create(
         id   = 1,
@@ -365,16 +365,16 @@ class PromiseAlarmViewTest(TestCase):
         SurveyAlcoholCategory.objects.create(
         id               = 1,
         alcohol_category = AlcoholCategory.objects.get(id=1),
-        survey           = Survey.objects.get(id=1) 
+        survey           = Survey.objects.get(id=1)
     )
         DrinkingMethod.objects.create(
         id   = 1,
-        name = "test"  
+        name = "test"
     )
         SurveyDrinkingMethod.objects.create(
         id              = 1,
         drinking_method = DrinkingMethod.objects.get(id=1),
-        survey          = Survey.objects.get(id=1) 
+        survey          = Survey.objects.get(id=1)
     )
         Flavor.objects.create(
         id   = 1,
@@ -393,15 +393,15 @@ class PromiseAlarmViewTest(TestCase):
         ),
 
     def tearDown(self):
-        DrinkingMethod.objects.all().delete(), 
-        Flavor.objects.all().delete(), 
-        Mbti.objects.all().delete(), 
-        SurveyAlcoholCategory.objects.all().delete(), 
-        Survey.objects.all().delete(), 
-        SurveyDrinkingMethod.objects.all().delete(), 
-        SurveyFlavor.objects.all().delete(), 
-        User.objects.all().delete(), 
-        AlcoholCategory.objects.all().delete(), 
+        DrinkingMethod.objects.all().delete(),
+        Flavor.objects.all().delete(),
+        Mbti.objects.all().delete(),
+        SurveyAlcoholCategory.objects.all().delete(),
+        Survey.objects.all().delete(),
+        SurveyDrinkingMethod.objects.all().delete(),
+        SurveyFlavor.objects.all().delete(),
+        User.objects.all().delete(),
+        AlcoholCategory.objects.all().delete(),
         Gender.objects.all().delete()
         Meeting.objects.all().delete()
 
@@ -420,4 +420,10 @@ class PromiseAlarmViewTest(TestCase):
                 ]
             }
         })
+        self.assertEqual(response.status_code, 200)
+
+        mocked_requests.get = mock.MagicMock(return_value = MockedResponse())
+        headers             = {"HTTP_Authorization": "access_token"}
+        response            = client.get("/users/login", **headers)
+
         self.assertEqual(response.status_code, 200)
