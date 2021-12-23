@@ -25,7 +25,13 @@ class SurveyView(View):
             if Survey.objects.filter(user=user).exists():
                 return JsonResponse({ 'message' : 'ALREDY_EXISTS' }, status = 400)
 
-            Survey.objects.create(
+            # Transaction (ACID)
+            # 1. BEGIN TRANSACTION
+            # 2. ACTION(S)
+            # 3. IF ERROR -> ROLLBACK
+            # 4. IF NOT ERROR -> COMMIT
+
+            survey = Survey.objects.create(
                 user           = user,
                 gender         = gender,
                 mbti           = mbti,
@@ -39,25 +45,27 @@ class SurveyView(View):
                 hobby          = hobby,
             )
 
-            survey  = Survey.objects.get(user=user)
+            # survey  = Survey.objects.get(user=user)
             
             for flavor in data['flavor']:
                 SurveyFlavor.objects.create(
-                flavor = Flavor.objects.get(name=flavor),
-                survey = survey
-            ) 
+                    flavor = Flavor.objects.get(name=flavor),
+                    survey = survey
+                ) 
+
             for alcohol_category in data['alcohol_category']:
                 SurveyAlcoholCategory.objects.create(
-                alcohol_category = AlcoholCategory.objects.get(name=alcohol_category),
-                survey           = survey
-            )
+                    alcohol_category = AlcoholCategory.objects.get(name=alcohol_category),
+                    survey           = survey
+                )
 
             for drinking_method in data['drinking_method']:
                 SurveyDrinkingMethod.objects.create(
-                drinking_method = DrinkingMethod.objects.get(name=drinking_method),
-                survey          = survey
-            )
-            return JsonResponse({"message" : "SUCCESS" }, status = 201)
+                    drinking_method = DrinkingMethod.objects.get(name=drinking_method),
+                    survey          = survey
+                )
+
+            return JsonResponse({"message" : "SUCCESS" }, status=201)
         
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)

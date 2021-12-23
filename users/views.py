@@ -200,6 +200,30 @@ class AppointmentAlarmView(View):
         return JsonResponse({'message':result}, status=200)
 
 class MatchingListView(View):
+    # def get_total(self, a, b, c):
+    #     d = self.do_something_with_a(a)
+    #     e = self.do_something_with_b(b)
+    #     f = self.do_something_with_c(c)
+        
+    #     return d + e + f
+
+    # def do_something_with_a(self, a):
+    #     pass
+
+    # def do_something_with_b(self, b):
+    #     pass
+
+    # def do_something_with_c(self, c):
+    #     pass
+
+    # def calc_matching_point(self, user_preferences, opponent_preferences, weight):
+    #     sum = 0
+
+    #     for user_pref in user_preferences:
+    #         sum += int(user_pref in opponent_preferences) * weight
+            
+    #     return sum
+    
     @authorization
     def get(self, request):
         try:
@@ -234,7 +258,7 @@ class MatchingListView(View):
             user_survey_flavors     = user.flavors.all()
 
             # 일치하면 1, 아니면 0 점 임, if는 쓰지 않겠다는 굳은 의지!
-            matching_point_dict = { True : 1, False : 0 }
+            # matching_point_dict = { True : 1, False : 0 }
             matching_list_dict  = {}
 
             # for를 돌리는 이유는 user는 한 명이지만 상대유저들은 여러개이기 때문
@@ -242,8 +266,10 @@ class MatchingListView(View):
                 matching_point = 0
                 
                 # 일치여부 항목에 대한 가중치 계산
-                alcohol_limit_point = matching_point_dict.get(opponent.alcohol_limit == user.alcohol_limit) * alcohol_limit_weight
-                alcohol_level_point = matching_point_dict.get(opponent.alcohol_level == user.alcohol_level) * alcohol_level_weight
+                # alcohol_limit_point = matching_point_dict.get(opponent.alcohol_limit == user.alcohol_limit) * alcohol_limit_weight
+                alcohol_limit_point = int(opponent.alcohol_limit == user.alcohol_limit) * alcohol_limit_weight
+                # alcohol_level_point = matching_point_dict.get(opponent.alcohol_level == user.alcohol_level) * alcohol_level_weight
+                alcohol_level_point = int(opponent.alcohol_level == user.alcohol_level) * alcohol_level_weight
                 
                 opponent_drinking_methods   = opponent.drinking_methods.all()
                 opponent_alcohol_categories = opponent.alcohol_categories.all()
@@ -251,13 +277,13 @@ class MatchingListView(View):
 
                 # for 문을 돌리는 이유는 유저가 가진 리스트와 상대 유저가 가진 리스트를 비교해야하기 때문임
                 for user_drinking_method in user_drinking_methods:
-                    matching_point += matching_point_dict.get(user_drinking_method in opponent_drinking_methods) * drinking_method_weight
+                    matching_point += int(user_drinking_method in opponent_drinking_methods) * drinking_method_weight
                 
                 for user_alcohol_categorie in user_alcohol_categories:
-                    matching_point += matching_point_dict.get(user_alcohol_categorie in opponent_alcohol_categories) * alcohol_category_weight
+                    matching_point += int(user_alcohol_categorie in opponent_alcohol_categories) * alcohol_category_weight
 
                 for user_survey_flavor in user_survey_flavors:
-                    matching_point += matching_point_dict.get(user_survey_flavor in opponent_survey_flavors) * flavor_weight
+                    matching_point += int(user_survey_flavor in opponent_survey_flavors) * flavor_weight
 
                 #전체 항목에 대한 매칭 포인트를 합산함
                 total_matching_point = alcohol_limit_point + alcohol_level_point + matching_point
@@ -280,3 +306,15 @@ class MatchingListView(View):
 
         except Survey.DoesNotExist:
             return JsonResponse({ "message" : "DoesNotExist" }, status=400)
+
+            
+# Layered Architecture Pattern
+
+# Controller
+# Service
+# Model (SQL)  DAO -> Data Access Object
+
+# SoC (Separation of Concern)
+# SRP (Single Responsibility Principle)
+
+# Router -> ProductController -> ProductService -> ProductModel
