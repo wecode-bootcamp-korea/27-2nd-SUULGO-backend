@@ -13,33 +13,42 @@ from suulgo.settings        import SECRET_KEY, ALGORITHM
 class ProfileView(View):
     @authorization
     def get(self, request):
+        user = request.user
 
-        user    = request.user
-
-        results = {
-                'name'             : user.name,
-                'profile_image_url': user.profile_image_url,
-                'email'            : user.email,
-                'survey_info'      : [
-                    {
-                        'class_number'     : survey.class_number,
-                        'stack'            : survey.stack,
-                        'alcohol_limit'    : survey.alcohol_limit,
-                        'alcohol_level'    : survey.alcohol_level,
-                        'comment'          : survey.comment,
-                        'favorite_place'   : survey.favorite_place,
-                        'favorite_food'    : survey.favorite_food,
-                        'hobby'            : survey.hobby,
-                        'gender'           : survey.gender.name,
-                        'mbti_name'        : survey.mbti.name,
-                        'mbti_information' : survey.mbti.information
-                    }
-                    for survey in user.survey_set.all()
-                ]
+        for survey in user.survey_set.all():
+            result = {
+                "id"                       : survey.user.id,
+                "profile_image_url"        : survey.user.profile_image_url,
+                "text_name"                : survey.user.name,
+                "text_email"               : survey.user.email,
+                "text_gender"              : survey.gender.name,
+                "text_mbti_title"          : survey.mbti.name,
+                "text_mbti_description"    : survey.mbti.information,
+                "text_class_number"        : survey.class_number,
+                "text_comment"             : survey.comment,
+                "text_favorite_place"      : survey.favorite_place,
+                "text_favorite_food"       : survey.favorite_food,
+                "text_favorite_hobby"      : survey.hobby,
+                "text_stack"               : survey.stack.name,
+                "alcohol_limit"            : {
+                    "name"                 : survey.alcohol_limit.name,
+                    },
+                "alcohol_level"            : {
+                    "name"                 : survey.alcohol_level,
+                    },
+                "alcohol_drinking_methods" : [{
+                    "name"                 : survey_drinking_method.drinking_method.name,
+                } for survey_drinking_method in survey.surveydrinkingmethod_set.all()],
+                "alcohol_categories"       : [{
+                    "name"                 : survey_alcohol_category.alcohol_category.name,
+                }for survey_alcohol_category in survey.surveyalcoholcategory_set.all()],
+                "alcohol_flavors"          : [{
+                    "name"                 : survey_flavor.flavor.name,
+                    } for survey_flavor in survey.surveyflavor_set.all()]
         }
 
-        return JsonResponse({"result": results, "message": "SUCCESS"}, status=200)
-
+        return JsonResponse({"result": result, "message": "SUCCESS"}, status=200)
+        
 class KakaoLoginView(View):
     def get(self, request):
         try:
