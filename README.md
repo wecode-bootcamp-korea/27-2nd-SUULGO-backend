@@ -18,7 +18,7 @@
 
 ## [기술 스택]
 ### 사용 기술
-Django, Python, MySQL, jwt, bcrypt, AWS(EC2, RDS), Docker, Schdule, Git, Notion
+Django, Python, MySQL, jwt, bcrypt, AWS(EC2, RDS), Git, Notion(kanban)
 
 ### ERD
 <img width="1018" src="https://user-images.githubusercontent.com/92412962/147327052-61887084-fbcc-4f9e-b9f1-2305610e0ef1.png">
