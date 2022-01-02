@@ -177,6 +177,9 @@ class AppointmentView(View):
             date_format  = '%Y-%m-%d'
             promise_date = datetime.strptime(string_date,date_format).date()
 
+            if requester == respondent:
+                return JsonResponse({'message':'USER_ERROR'}, status=400)
+
             if datetime.now().date() >= promise_date:
                 return JsonResponse({'message':'DATE_ERROR'}, status=400)
 
