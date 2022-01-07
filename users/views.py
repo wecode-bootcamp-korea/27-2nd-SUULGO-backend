@@ -205,7 +205,8 @@ class AppointmentAlarmView(View):
             'requester' : [{
                 'id'            : meeting.requester.id,
                 'name'          : meeting.requester.name,
-                'profile_image' : meeting.requester.profile_image_url
+                'profile_image' : meeting.requester.profile_image_url,
+                'date'          : meeting.time,
             } for meeting in meetings]
         }
 
