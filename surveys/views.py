@@ -1,5 +1,4 @@
 import json
-from django.db.models.fields import SmallAutoField
 
 from django.http  import JsonResponse
 from django.db    import transaction
@@ -7,6 +6,7 @@ from django.views import View
 
 from users.models import *
 from core.utils   import authorization
+
 
 class SurveyView(View):
     @authorization
@@ -22,6 +22,8 @@ class SurveyView(View):
             favorite_food    = data['favorite_food']
             hobby            = data['hobby']
             comment          = data['comment']
+            class_number     = data['class_number'],
+            alcohol_level    = data['alcohol_level'],
 
             if Survey.objects.filter(user=user).exists():
                 return JsonResponse({ 'message' : 'ALREDY_EXISTS' }, status = 400)
@@ -33,8 +35,8 @@ class SurveyView(View):
                     mbti           = mbti,
                     stack          = stack,
                     alcohol_limit  = alcohol_limit,
-                    class_number   = data['class_number'],
-                    alcohol_level  = data['alcohol_level'],
+                    class_number   = class_number,
+                    alcohol_level  = alcohol_level,
                     comment        = comment,
                     favorite_place = favorite_place,
                     favorite_food  = favorite_food,
@@ -63,5 +65,3 @@ class SurveyView(View):
             
         except KeyError:
             return JsonResponse({"message" : "KEY_ERROR"}, status=400)
-
-
