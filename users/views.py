@@ -1,14 +1,14 @@
-import jwt, json, requests
+import jwt, json
 
 from django.views           import View
 from django.http            import JsonResponse
 from django.core.exceptions import ValidationError
-from enum                   import Enum
 
 from users.models           import *
 from datetime               import datetime
 from core.utils             import KakaoAPI, authorization
 from suulgo.settings        import SECRET_KEY, ALGORITHM
+from users.util.matching    import get_user_weight, point_calculator
 
 class ProfileView(View):
     @authorization
@@ -47,8 +47,8 @@ class ProfileView(View):
                     } for survey_flavor in survey.surveyflavor_set.all()]
         }
 
-        return JsonResponse({"result": result, "message": "SUCCESS"}, status=200)
-        
+        return JsonResponse({"result": result}, status=200)
+
 class KakaoLoginView(View):
     def get(self, request):
         try:
@@ -78,23 +78,13 @@ class KakaoLoginView(View):
 
             token   = jwt.encode(payload, SECRET_KEY, ALGORITHM)
 
-            return JsonResponse({"message": "SUCCESS", "token": token, "result": user_info, "survey": Survey.objects.filter(user_id=user.id).exists()}, status=200)
+            return JsonResponse({"token": token, "result": user_info, "survey": Survey.objects.filter(user_id=user.id).exists()}, status=200)
 
         except ValidationError:
             return JsonResponse({"message": "VALIDATION_ERROR"}, status=400)
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-
-class Stack(Enum):
-    FRONT = 1
-    BACK  = 2
-
-class AlcoholLimit(Enum):
-    ZERO  = 1
-    HALF  = 2
-    ONE   = 3
-    N     = 4
 
 class UserView(View):
     @authorization
@@ -149,7 +139,6 @@ class UserView(View):
 
 class UserListView(View):
     def get(self, request):
-
         offset              = int(request.GET.get("offset", 0))
         limit               = int(request.GET.get("limit", 100))
         alcohol_category_id = int(request.GET.get("alcohol_category_id", 0))
@@ -216,42 +205,29 @@ class MatchingListView(View):
     @authorization
     def get(self, request):
         try:
-            drinking_method_weight  = 20
-            flavor_weight           = 20
-            alcohol_category_weight = 22
-            alcohol_limit_weight    = 19
-            alcohol_level_weight    = 19
-
             opponents               = Survey.objects.exclude(user = request.user) 
             user                    = Survey.objects.get(user = request.user)
             user_drinking_methods   = user.drinking_methods.all()
             user_alcohol_categories = user.alcohol_categories.all()
-            user_survey_flavors     = user.flavors.all()
+            user_flavors            = user.flavors.all()
+            user_weight             = get_user_weight(user)
+            print(f"결과 : {user_weight}")
 
             matching_list_dict  = {}
-
             for opponent in opponents:
                 matching_point = 0
                 
-                alcohol_limit_point = int(opponent.alcohol_limit == user.alcohol_limit) * alcohol_limit_weight
-                alcohol_level_point = int(opponent.alcohol_level == user.alcohol_level) * alcohol_level_weight
-                
                 opponent_drinking_methods   = opponent.drinking_methods.all()
                 opponent_alcohol_categories = opponent.alcohol_categories.all()
-                opponent_survey_flavors     = opponent.flavors.all()
+                opponent_flavors            = opponent.flavors.all()
 
-                for user_drinking_method in user_drinking_methods:
-                    matching_point += int(user_drinking_method in opponent_drinking_methods) * drinking_method_weight
-                
-                for user_alcohol_categorie in user_alcohol_categories:
-                    matching_point += int(user_alcohol_categorie in opponent_alcohol_categories) * alcohol_category_weight
+                matching_point  += point_calculator(opponent_drinking_methods, user_drinking_methods, user_weight['drinking_method_weight'])
+                matching_point  += point_calculator(opponent_alcohol_categories, user_alcohol_categories, user_weight['alcohol_category_weight'])
+                matching_point  += point_calculator(opponent_flavors, user_flavors, user_weight['flavor_weight'])
+                matching_point  += int(opponent.alcohol_limit == user.alcohol_limit) * user_weight['alcohol_limit_weight']
+                matching_point  += int(opponent.alcohol_level == user.alcohol_level) * user_weight['alcohol_level_weight']
 
-                for user_survey_flavor in user_survey_flavors:
-                    matching_point += int(user_survey_flavor in opponent_survey_flavors) * flavor_weight
-
-                total_matching_point = alcohol_limit_point + alcohol_level_point + matching_point
-
-                matching_list_dict[opponent.id] = total_matching_point 
+                matching_list_dict[opponent.id] = int(matching_point)
 
             sorted_matching_list = sorted(matching_list_dict.items(), key=lambda x: x[1], reverse = True)
             

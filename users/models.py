@@ -81,18 +81,23 @@ class AlcoholCategory(models.Model):
         db_table = 'alcohol_categories'
 
 class Survey(TimeStampModel):
-    gender         = models.ForeignKey('Gender', on_delete=models.CASCADE)
-    mbti           = models.ForeignKey('Mbti', on_delete=models.CASCADE)
-    class_number   = models.PositiveSmallIntegerField()
-    stack          = models.ForeignKey('Stack', on_delete=models.CASCADE)
-    alcohol_limit  = models.ForeignKey('AlcoholLimit', on_delete=models.CASCADE)
-    alcohol_level  = models.CharField(max_length=100)
-    comment        = models.CharField(max_length=500)
-    favorite_place = models.CharField(max_length=200)
-    favorite_food  = models.CharField(max_length=200)
-    hobby          = models.CharField(max_length=200)
-    deleted_at     = models.DateTimeField(null=True)
-    user           = models.ForeignKey('User', on_delete=models.CASCADE, unique=True)
+    gender                  = models.ForeignKey('Gender', on_delete=models.CASCADE)
+    mbti                    = models.ForeignKey('Mbti', on_delete=models.CASCADE)
+    class_number            = models.PositiveSmallIntegerField()
+    stack                   = models.ForeignKey('Stack', on_delete=models.CASCADE)
+    alcohol_limit           = models.ForeignKey('AlcoholLimit', on_delete=models.CASCADE)
+    alcohol_level           = models.CharField(max_length=100)
+    comment                 = models.CharField(max_length=500)
+    favorite_place          = models.CharField(max_length=200)
+    favorite_food           = models.CharField(max_length=200)
+    hobby                   = models.CharField(max_length=200)
+    deleted_at              = models.DateTimeField(null=True)
+    user                    = models.ForeignKey('User', on_delete=models.CASCADE, unique=True)
+    drinking_method_weight  = models.DecimalField(max_digits = 5, decimal_places = 2, default=0.2)
+    alcohol_category_weight = models.DecimalField(max_digits = 5, decimal_places = 2, default=0.2)
+    alcohol_limit_weight    = models.DecimalField(max_digits = 5, decimal_places = 2, default=0.2)
+    alcohol_level_weight    = models.DecimalField(max_digits = 5, decimal_places = 2, default=0.2)
+    flavor_weight           = models.DecimalField(max_digits = 5, decimal_places = 2, default=0.2)
 
     class Meta:
         db_table = 'surveys'

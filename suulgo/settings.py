@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'suulgo.wsgi.application'
 DATABASES =  {
     'default' : {
         'ENGINE'  : 'django.db.backends.mysql',
-        'NAME'    : os.environ['NAME'],
+        'NAME'    : 'suulgo',
         'USER'    : os.environ['USER'],
         'PASSWORD': os.environ['PASSWORD'],
         'HOST'    : os.environ['HOST'],
